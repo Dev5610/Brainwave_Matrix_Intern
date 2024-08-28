@@ -1,0 +1,93 @@
+import requests
+from urllib.parse import urlparse
+import tldextract
+
+def get_url_features(url):
+    """
+    Extract features from a URL.
+
+    Args:
+        url (str): The URL to analyze.
+
+    Returns:
+        dict: A dictionary containing the URL features.
+    """
+    features = {
+        'domain': '',
+        'subdomain': '',
+        'path': '',
+        'query': '',
+        'has_ip': False,
+        'has_port': False,
+        'has_symbol': False,
+        'has_digit': False,
+        'has_hyphen': False,
+        'has_underscore': False,
+        'has_at_symbol': False
+    }
+
+    parsed_url = urlparse(url)
+    features['domain'] = tldextract.extract(url).domain
+    features['subdomain'] = tldextract.extract(url).subdomain
+    features['path'] = parsed_url.path
+    features['query'] = parsed_url.query
+
+    if re.search(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", url):
+        features['has_ip'] = True
+    if re.search(r":\d+", url):
+        features['has_port'] = True
+    if re.search(r"[!@#$%^&*()_+=-{};:'<>,./?]", url):
+        features['has_symbol'] = True
+    if re.search(r"\d", url):
+        features['has_digit'] = True
+    if re.search(r"-", url):
+        features['has_hyphen'] = True
+    if re.search(r"_", url):
+        features['has_underscore'] = True
+    if re.search(r"@symbol", url):
+        features['has_at_symbol'] = True
+
+    return features
+
+def check_phishing(url_features):
+    """
+    Check if a URL is potentially phishing based on its features.
+
+    Args:
+        url_features (dict): The URL features.
+
+    Returns:
+        bool: True if the URL is potentially phishing, False otherwise.
+    """
+    phishing_score = 0
+
+    if url_features['has_ip']:
+        phishing_score += 1
+    if url_features['has_port']:
+        phishing_score += 1
+    if url_features['has_symbol']:
+        phishing_score += 1
+    if url_features['has_digit']:
+        phishing_score += 1
+    if url_features['has_hyphen']:
+        phishing_score += 1
+    if url_features['has_underscore']:
+        phishing_score += 1
+    if url_features['has_at_symbol']:
+        phishing_score += 1
+
+    if phishing_score >= 3:
+        return True
+    else:
+        return False
+
+def main():
+    url = input("Enter a URL: ")
+    url_features = get_url_features(url)
+    if check_phishing(url_features):
+        print("Potential phishing link detected!")
+    else:
+        print("URL appears to be safe.")
+
+if __name__ == "__main__":
+    main()
